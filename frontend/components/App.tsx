@@ -1,26 +1,34 @@
-import React from 'react';
+import React from "react";
 
-import { FormGroup, InputGroup } from "@blueprintjs/core";
+import { PlayerForm } from "./Player-form";
+import { ControlGroup } from "@blueprintjs/core";
+import { IPlayerVillage } from "../src/calculate-distance";
 
-
-class App extends React.PureComponent {
-	render() {
-		return (
-			<div>
-				<h1>Hello Heathens, this will be the best planning tool there is</h1>
-        <FormGroup
-        helperText="Helper text with details..."
-        label="Label A"
-        labelFor="text-input"
-        labelInfo="(required)"
-      >
-        <InputGroup id="text-input" placeholder="Placeholder text" />
-        <InputGroup id="text-input" placeholder="Placeholder text" />
-        <InputGroup id="text-input" placeholder="Placeholder text" />
-      </FormGroup>
-			</div>
-		);
-	}
+interface IAppState {
+  attackerVillage?: IPlayerVillage;
+  targetVillages?: IPlayerVillage[];
+  distances?: number[];
 }
 
-export default App;
+export class App extends React.PureComponent {
+  private attacker: IPlayerVillage = {
+    location: { x: 0, y: 0 },
+  };
+  public state: IAppState = {};
+
+  public render(): JSX.Element {
+    return (
+      <div>
+        <h1>Hello Heathens, this will be the best planning tool there is</h1>
+        <ControlGroup fill={false} vertical={true}>
+          <ControlGroup fill={false} vertical={false}>
+            <PlayerForm name="Attacker village"></PlayerForm>
+          </ControlGroup>
+          <ControlGroup fill={false} vertical={false}>
+            <PlayerForm name="Target village"></PlayerForm>
+          </ControlGroup>
+        </ControlGroup>
+      </div>
+    );
+  }
+}

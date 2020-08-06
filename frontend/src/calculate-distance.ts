@@ -13,7 +13,7 @@ export interface IPlayerVillage {
 export function calculateDistance(
   attacker: IPlayerVillage,
   defender: IPlayerVillage,
-  mapSize = 400
+  mapSize = 400,
 ): number {
   const distanceX =
     ((attacker.location.x - defender.location.x + (3 * mapSize + 1)) %
@@ -31,7 +31,7 @@ export function calculateDistance(
 export function calculateTravelTime(
   distance: number,
   attacker: IPlayerVillage,
-  troopSpeed = 3
+  troopSpeed = 3,
 ): number {
   let baseTime: number;
   if (distance < 20) {
