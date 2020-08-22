@@ -1,28 +1,54 @@
 import { ControlGroup, InputGroup, Label } from "@blueprintjs/core";
 import React from "react";
 import { parseMapLocationFromVillageLink } from "../src/parse-map-location";
-import { IPlayerVillage, calculateDistance } from "../src/calculate-distance";
+import {
+  IPlayerVillage,
+  calculateDistance,
+  calculateTravelTime,
+  IMapLocation,
+} from "../src/calculate-distance";
+
 interface IPlayerFormProps {
   name: string;
   id: string;
   sendPlayerVillage(playerVillage: IPlayerVillage, id: string): void;
   attacker?: IPlayerVillage;
 }
-export class PlayerForm extends React.Component<IPlayerFormProps> {
-  private villageLinkInputRef: React.RefObject<HTMLInputElement>;
+
+interface ITargetStats {
+  distance: number;
+  time: number;
+}
+
+export class TargetRow extends React.Component<IPlayerFormProps> {
   constructor(props: IPlayerFormProps) {
     super(props);
     this.villageLinkInputRef = React.createRef<HTMLInputElement>();
   }
+
+  private villageLinkInputRef: React.RefObject<HTMLInputElement>;
   public state: IPlayerVillage = {
-    // locations:
     location: {
       x: 0,
       y: 0,
     },
   };
-  private _distanceInput: JSX.Element | null = null;
-  private setVillageLocation = () => {
+
+  private _stats: ITargetStats = {
+    distance: 0,
+    time: 0,
+  };
+
+  private _calculateStats(targetVillage: IPlayerVillage) {
+    if (this.props.attacker) {
+      const distance = calculateDistance(this.props.attacker, targetVillage);
+      const time = calculateTravelTime(distance, this.props.attacker);
+
+      this._stats = { distance, time };
+    }
+  }
+
+  private _setVillageLocation = () => {
     const villageInput = this.villageLinkInputRef.current;
     if (villageInput) {
       const villageLocation = parseMapLocationFromVillageLink(
@@ -31,22 +57,14 @@ export class PlayerForm extends React.Component<IPlayerFormProps> {
       console.log(villageLocation);
 
       if (villageLocation !== null) {
-        this.props.sendPlayerVillage(
-          { location: villageLocation },
-          this.props.id,
-        );
-        this.setState({ location: villageLocation });
-        if (this.props.attacker) {
-          const distance = calculateDistance(this.props.attacker, {
-            location: villageLocation,
-          });
-          this._distanceInput = (
-            <InputGroup value={`${distance}`} readOnly={true} />
-          );
-        }
+        const targetVillage = { location: villageLocation };
+        this.props.sendPlayerVillage(targetVillage, this.props.id);
+        this._calculateStats(targetVillage);
+        this.setState(targetVillage);
       }
     }
   };
+
   public render(): JSX.Element {
     return (
       <ControlGroup fill={false} vertical={false}>
@@ -55,7 +73,7 @@ export class PlayerForm extends React.Component<IPlayerFormProps> {
           ref={this.villageLinkInputRef}
           id={this.props.id}
           placeholder="Village link"
-          onChange={this.setVillageLocation}
+          onChange={this._setVillageLocation}
         />
         <Label htmlFor="x">X:</Label>
         <InputGroup
@@ -71,7 +89,8 @@ export class PlayerForm extends React.Component<IPlayerFormProps> {
           readOnly={true}
           value={`${this.state.location.y}`}
         />
-        {this._distanceInput}
+        <InputGroup value={`${this._stats.distance}`} readOnly={true} />
+        <InputGroup value={`${this._stats.time}`} readOnly={true} />
       </ControlGroup>
     );
   }

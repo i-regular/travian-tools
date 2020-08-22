@@ -2,12 +2,12 @@ export interface IMapLocation {
   x: number;
   y: number;
 }
-export type BootsArtifactCoeficient = 2 | 1.5 | 1;
+export type BootsArtifactCoefficient = 2 | 1.5 | 1;
 
 export interface IPlayerVillage {
   location: IMapLocation;
   tournamentSquareLevel?: number;
-  bootsArtifact?: BootsArtifactCoeficient;
+  bootsArtifact?: BootsArtifactCoefficient;
 }
 
 export function calculateDistance(

@@ -2,26 +2,38 @@ import React from "react";
 import { PlayerForm } from "./Player-form";
 import { ControlGroup, FormGroup, InputGroup } from "@blueprintjs/core";
 import { IPlayerVillage } from "../src/calculate-distance";
-interface Attacker {
+import { TargetRow } from "./Target-form-row";
+interface IAttacker {
+  attackerVillage?: IPlayerVillage;
   targetVillages: string[];
 }
-interface Attackers {
-  [id: string]: Attacker;
+interface IAttackers {
+  [id: string]: IAttacker;
 }
 interface IAppState {
-  attackerVillage?: IPlayerVillage;
+  // TODO: Move targetVillages to IAttacker interface
   targetVillages?: IPlayerVillage[];
-  distances?: number[];
-  attackers: Attackers;
+  attackers: IAttackers;
 }
 export class App extends React.Component<any, IAppState> {
   state: IAppState = { attackers: {} };
-  private _getAttackerPlayerVillage(playerVillage: IPlayerVillage): void {
-    const newState = this.state;
-    newState.attackerVillage = playerVillage;
-    this.setState(newState);
-  }
-  _getDefenderPlayerVillage = (playerVillage: IPlayerVillage) => {
+
+  _getAttackerPlayerVillage = (
+    attackerVillage: IPlayerVillage,
+    attackerId: string,
+  ): void => {
+    this.setState({
+      attackers: {
+        ...this.state.attackers,
+        [attackerId]: {
+          attackerVillage,
+          targetVillages: [...this.state.attackers[attackerId].targetVillages],
+        },
+      },
+    });
+  };
+
+  _getDefenderPlayerVillage = (playerVillage: IPlayerVillage): void => {
     const newState = this.state;
     if (newState.targetVillages === undefined) {
       newState.targetVillages = [playerVillage];
@@ -30,16 +42,18 @@ export class App extends React.Component<any, IAppState> {
     }
     this.setState(newState);
   };
-  addAttacker = () => {
-    const newAttacker = `${Date.now()}`;
+
+  addAttacker = (): void => {
+    const newAttackerID = `${Date.now()}`;
     this.setState({
       attackers: {
         ...this.state.attackers,
-        [newAttacker]: { targetVillages: [] },
+        [newAttackerID]: { targetVillages: [] },
       },
     });
   };
-  addTarget = (attackerId: string) => {
+
+  addTarget = (attackerId: string): void => {
     this.setState({
       attackers: {
         ...this.state.attackers,
@@ -52,6 +66,7 @@ export class App extends React.Component<any, IAppState> {
       },
     });
   };
+
   public render(): JSX.Element {
     return (
       <div>
@@ -66,7 +81,7 @@ export class App extends React.Component<any, IAppState> {
                 <PlayerForm
                   name={attacker}
                   id={attacker}
-                  sendPlayerVillage={this._getAttackerPlayerVillage.bind(this)}
+                  sendPlayerVillage={this._getAttackerPlayerVillage}
                 />
               </ControlGroup>
               {this.state.attackers[attacker].targetVillages &&
@@ -74,11 +89,13 @@ export class App extends React.Component<any, IAppState> {
                   (targetVillage) => {
                     return (
                       <ControlGroup fill={false} vertical={false}>
-                        <PlayerForm
+                        <TargetRow
                           name={targetVillage}
                           id={targetVillage}
                           sendPlayerVillage={this._getDefenderPlayerVillage}
-                          attacker={this.state.attackerVillage}
+                          attacker={
+                            this.state.attackers[attacker].attackerVillage
+                          }
                         />
                       </ControlGroup>
                     );
